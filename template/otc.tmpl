@@ -1,0 +1,8 @@
+🪙OKX实时U价 <b>TOP10</b>
+
+{{range $idx, $value := .Sells}}{{add $idx}} <b>{{$value.Price}}{{$value.QuoteSymbol}}</b>  <b>{{$value.NickName}}</b>
+{{end}}
+
+🌈 数据来源于OKX实时获取
+⚠️ 小额购U通常会贵0.1 ~ 0.2元
+⏱️ 获取时间: {{format .DateTime}}

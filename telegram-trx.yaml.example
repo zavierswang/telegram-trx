@@ -1,0 +1,30 @@
+app:
+  env: dev                                                                          #系统运行环境test/dev/release/prod
+  app_name: telegram-trx                                                            #程序名称
+  support: dingwo                                                                   #客服
+  license: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                                         #授权码(过期请找管理)
+  groups:                                                                           #群组通知
+    - test2_zoom_group
+
+telegram:
+  token: 6364990793:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA                             #telegram token
+  tron_scan_api_key: 44444444-2244-4bf8-82b8-cccccccccccc                           #tron apiKey
+  grid_api_key: 44444444-949d-4659-bd8d-444444444444                                #grid apiKey
+  alias_key: 1688-TRX-OUT                                                           #私钥别名
+  private_key: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa     #私钥
+  receive_address: TWhHbZ8jkLxR83yGKTTTTTTTTTTTTTTTTT                               #收款地址
+  receive_address_icon: ./assets/receive.png                                        #收款码图片
+  send_address: TXyh7opwbn6yJSSSSSSSSSSSSSSSSSSSSS                                  #出款地址
+  ratio: 0.1                                                                        #利润率10%
+  advance_amount: 15                                                                #每次预支金额TRX
+  threshold_value: 2                                                                #单次兑换金额阈值记录一次预支
+
+
+db:
+  driver: mysql
+  dsn: root:123456@tcp(127.0.0.1:3306)/trx?charset=utf8mb4&parseTime=True&loc=Local
+  max_idle_conns: 10
+  max_open_conns: 100
+  log_mode: info
+  enable_file_log_writer: true
+  log_filename: sql.log
