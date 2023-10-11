@@ -66,17 +66,17 @@ func TransferTRX(from, to string, amount float64) (string, error) {
 		logger.Error("transfer %s=> %s %d TRX failed %v", signerAddress.address, to, value, err)
 		return "", err
 	}
-	logger.Info("txID: %s", common.Bytes2Hex(tx.GetTxid()))
+	logger.Info("[grid] txID: %s", common.Bytes2Hex(tx.GetTxid()))
 
 	var ctrl *Controller
 	ks, acct, err := store.UnlockedKeystore(signerAddress.String(), "")
 	if err != nil {
-		logger.Error("unlocked keystore failed %v", err)
+		logger.Error("[grid] unlocked keystore failed %v", err)
 		return "", err
 	}
 	ctrl = NewController(conn, ks, acct, tx.Transaction, func(controller *Controller) {})
 	if err = ctrl.ExecuteTransaction(); err != nil {
-		logger.Error("execute transaction failed %v", err)
+		logger.Error("[grid] execute transaction failed %v", err)
 		return "", err
 	}
 	return common.Bytes2Hex(tx.GetTxid()), nil

@@ -172,20 +172,20 @@ func (l *ListenUSDT) transfer(usdt USDT, Px float64) error {
 		TxID:        usdt.TransactionId,
 		FromAddress: usdt.FromAddress,
 		ToAddress:   usdt.ToAddress,
-		Balance:     usdt.Balance,
-		Amount:      usdt.Amount,
+		Balance:     usdt.Balance, //实际收到金额 USDT
+		Amount:      usdt.Amount,  //兑换金额TRX，已经扣除利润率
 		Status:      cst.OrderStatusRunning,
 		Finished:    false,
 	}
+	logger.Info("[scheduler] %s transfer amount %.3f TRX from %s", usdt.TransactionId, amount, usdt.FromAddress)
 	err := global.App.DB.Save(&order).Error
 	if err != nil {
-		logger.Error("[scheduler] new order record failed %v", err)
+		logger.Error("[scheduler] %s transfer amount %.3f TRX from %s, save to database failed %v", usdt.TransactionId, amount, usdt.FromAddress, err)
 		usdt.Status = "失败"
 		usdt.Description = "服务器异常"
 		l.failure(usdt)
 		return nil
 	}
-	logger.Info("[scheduler] transfer amount %.3f TRX", amount)
 	// 查看是否有预支记录
 	addr := models.Address{
 		Address: usdt.FromAddress,
@@ -211,9 +211,10 @@ func (l *ListenUSDT) transfer(usdt USDT, Px float64) error {
 	logger.Info("[scheduler] %s increment %d count of advance", usdt.FromAddress, count)
 	addr.Count += count
 	addr.Balance += usdt.Balance
+	addr.Advance = 0.0 //扣除完已经预支金额，重置预支数据
 	global.App.DB.Save(&addr)
 	logger.Info("[scheduler] %s deduct the advance and pay %.3f TRX", usdt.FromAddress, amount)
-	logger.Info("[scheduler] will be transfer %s => %f TRX", usdt.FromAddress, amount)
+	logger.Info("[scheduler] will be transfer %s => %.3f TRX", usdt.FromAddress, amount)
 	// 还需支付金额
 	usdt.Amount = amount
 	//检查余额是否足够
@@ -224,14 +225,12 @@ func (l *ListenUSDT) transfer(usdt USDT, Px float64) error {
 		usdt.Description = "网络错误"
 		return err
 	}
-	var remainAmount float64 // 钱包余额
+	var remainAmount float64 = 0.0 // 钱包余额
 	if asset != nil {
 		b, _ := strconv.ParseFloat(asset.Balance, 64)
 		remainAmount = utils.Trunc(b/math.Pow10(6), 2)
-	} else {
-		remainAmount = 0.0
 	}
-	logger.Info("[scheduler] account out wallet balance %.3f, %3f TRX will be transferred to %s", remainAmount, amount, usdt.FromAddress)
+	logger.Info("[scheduler] account out wallet balance %.3f, will be transferred %.3f TRX to %s", remainAmount, amount, usdt.FromAddress)
 	if remainAmount < amount {
 		tmpl, _ := template.ParseFiles(cst.RemainTemplateFile)
 		buf := new(buffer.Buffer)
@@ -261,6 +260,7 @@ func (l *ListenUSDT) transfer(usdt USDT, Px float64) error {
 		order.Status = cst.OrderStatusApiFailure
 		usdt.Status = "失败"
 		usdt.Description = "转帐失败"
+		logger.Info("[scheduler] save order %+v", order)
 		global.App.DB.Save(&order)
 		l.failure(usdt)
 		return err
@@ -312,14 +312,14 @@ func (l *ListenUSDT) failure(usdt USDT) {
 }
 
 type USDT struct {
-	TransactionId string
-	FromAddress   string
-	ToAddress     string
-	CreateTime    string
-	Balance       float64
+	TransactionId string  //交易号
+	FromAddress   string  //出款地址
+	ToAddress     string  //收款地址
+	CreateTime    string  //转帐时间
+	Balance       float64 //实际转帐金额(USDT)
 	Status        string
 	Description   string
-	Amount        float64
+	Amount        float64 //兑换金额(TRX)
 }
 
 type AssetSufficient struct {

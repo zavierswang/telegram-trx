@@ -45,16 +45,24 @@ func AdvanceAddress(ctx context.Context, update *tgb.MessageUpdate) error {
 		buf := new(buffer.Buffer)
 		tmpl, _ = template.ParseFiles(cst.AdvanceFailureTemplateFile)
 		_ = tmpl.Execute(buf, nil)
-		return update.Update.Reply(ctx, update.Answer(buf.String()).ParseMode(tg.HTML).DisableWebPagePreview(false).ReplyMarkup(inlineKeyboard))
+		return update.Update.Reply(ctx, update.Answer(buf.String()).
+			ParseMode(tg.HTML).
+			DisableWebPagePreview(false).
+			ReplyMarkup(inlineKeyboard),
+		)
 	}
 	addr := addrs[0]
 	logger.Info("[%s %s] compute address %+v advance permission", userId, username, addr)
 	if addr.Count <= 0 || addr.Advance > 0 {
-		logger.Error("[%s %s] forbid advance", userId, username)
+		logger.Error("[%s %s] forbiden advance", userId, username)
 		buf := new(buffer.Buffer)
 		tmpl, _ = template.ParseFiles(cst.AdvanceFailureTemplateFile)
 		_ = tmpl.Execute(buf, nil)
-		return update.Update.Reply(ctx, update.Answer(buf.String()).ParseMode(tg.HTML).DisableWebPagePreview(false).ReplyMarkup(inlineKeyboard))
+		return update.Update.Reply(ctx, update.Answer(buf.String()).
+			ParseMode(tg.HTML).
+			DisableWebPagePreview(false).
+			ReplyMarkup(inlineKeyboard),
+		)
 	}
 	logger.Warn("[%s %s] accept advance to address %s", userId, username, walletAddress)
 	buf := new(buffer.Buffer)
@@ -90,5 +98,8 @@ func AdvanceAddress(ctx context.Context, update *tgb.MessageUpdate) error {
 	}
 	tmpl, _ = template.ParseFiles(cst.AdvanceSuccessTemplateFile)
 	_ = tmpl.Execute(buf, nil)
-	return update.Update.Reply(ctx, update.Answer(buf.String()).ParseMode(tg.HTML).DisableWebPagePreview(true))
+	return update.Update.Reply(ctx, update.Answer(buf.String()).
+		ParseMode(tg.HTML).
+		DisableWebPagePreview(true),
+	)
 }
